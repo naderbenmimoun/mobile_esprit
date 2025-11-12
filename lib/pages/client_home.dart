@@ -25,6 +25,11 @@ class ClientHome extends StatelessWidget {
             onPressed: () => AppRouter.pushSlide(context, const ProfilePage()),
           ),
           IconButton(
+            tooltip: 'Mes réclamations',
+            icon: const Icon(Icons.report_gmailerrorred_outlined),
+            onPressed: () => Navigator.pushNamed(context, '/reclamations'),
+          ),
+          IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await auth.logout();
@@ -93,13 +98,12 @@ class ClientHome extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             AppCard(
-              onTap: () =>
-                  AppSnackBar.success(context, 'Fonctionnalité à venir'),
+              onTap: () => Navigator.pushNamed(context, '/reclamations'),
               child: Row(
                 children: const [
-                  Icon(Icons.history),
+                  Icon(Icons.report_gmailerrorred_outlined),
                   SizedBox(width: 12),
-                  Expanded(child: Text('Historique (exemple)')),
+                  Expanded(child: Text('Mes réclamations')),
                   Icon(Icons.chevron_right),
                 ],
               ),

@@ -4,6 +4,9 @@ import 'services/auth_service.dart';
 import 'pages/login_page.dart';
 import 'pages/admin_dashboard.dart';
 import 'pages/client_home.dart';
+import 'services/reclamation_db.dart';
+import 'pages/chatbot_screen.dart';
+import 'pages/reclamations_home_page.dart';
 
 // NOTE: Build failure originates from host path "C:\Users\NADER\ BM\...".
 // Ensure no file named "C:\Users\NADER" blocks directory creation or move project to a path without spaces.
@@ -50,6 +53,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final auth = AuthService();
   await auth.init(); // Init DB + seed admin
+  // Init reclamations DB
+  await ReclamationDatabase.instance.database;
 
   // Debug / instruction helper:
   // L'admin seedé est défini dans services/auth_service.dart.
@@ -165,6 +170,10 @@ class GestionUserApp extends StatelessWidget {
         ),
       ),
       themeMode: ThemeMode.system,
+      routes: {
+        '/reclamations': (context) => const ReclamationsHomePage(),
+        '/chat': (context) => const ChatbotScreen(),
+      },
       home: Builder(
         builder: (context) {
           final auth = AuthScope.watch(context);
