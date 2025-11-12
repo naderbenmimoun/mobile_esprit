@@ -21,6 +21,11 @@ class ClientHome extends StatelessWidget {
         title: const Text('Accueil - Client'),
         actions: [
           IconButton(
+            tooltip: 'Mon panier',
+            icon: const Icon(Icons.shopping_cart_outlined),
+            onPressed: () => Navigator.pushNamed(context, '/panier'),
+          ),
+          IconButton(
             icon: const Icon(Icons.person_outline),
             onPressed: () => AppRouter.pushSlide(context, const ProfilePage()),
           ),
@@ -104,6 +109,18 @@ class ClientHome extends StatelessWidget {
                   Icon(Icons.report_gmailerrorred_outlined),
                   SizedBox(width: 12),
                   Expanded(child: Text('Mes réclamations')),
+                  Icon(Icons.chevron_right),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            AppCard(
+              onTap: () => Navigator.pushNamed(context, '/panier'),
+              child: Row(
+                children: const [
+                  Icon(Icons.shopping_cart_outlined),
+                  SizedBox(width: 12),
+                  Expanded(child: Text('Mon panier')),
                   Icon(Icons.chevron_right),
                 ],
               ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'services/auth_service.dart';
 import 'pages/login_page.dart';
@@ -7,6 +8,13 @@ import 'pages/client_home.dart';
 import 'services/reclamation_db.dart';
 import 'pages/chatbot_screen.dart';
 import 'pages/reclamations_home_page.dart';
+import 'providers/cart_provider.dart';
+import 'pages/livraison_screen.dart';
+import 'pages/paiement_screen.dart';
+import 'pages/confirmation_screen.dart';
+import 'pages/cart_screen.dart';
+import 'pages/historique_screen.dart';
+import 'services/db_help.dart';
 
 // NOTE: Build failure originates from host path "C:\Users\NADER\ BM\...".
 // Ensure no file named "C:\Users\NADER" blocks directory creation or move project to a path without spaces.
@@ -56,6 +64,19 @@ void main() async {
   // Init reclamations DB
   await ReclamationDatabase.instance.database;
 
+  // Init orders/cart DB (backup + structure check)
+  try {
+    final dbHelper = DBHelper.instance;
+    await dbHelper.backupDatabase();
+    final hasCorrectStructure = await dbHelper.checkTableStructure();
+    if (!hasCorrectStructure) {
+      await dbHelper.deleteDatabase();
+      await dbHelper.database; // recreate with schema
+    }
+  } catch (e) {
+    debugPrint('Orders DB init error: $e');
+  }
+
   // Debug / instruction helper:
   // L'admin seedé est défini dans services/auth_service.dart.
   // Ouvrez ce fichier et cherchez une fonction init/seedAdmin pour
@@ -66,7 +87,17 @@ void main() async {
     'DEBUG: Vérifiez c:\\Users\\NADER BM\\Desktop\\flutter_user\\lib\\services\\auth_service.dart pour les informations du compte admin.',
   );
 
-  runApp(AuthScope(notifier: auth, child: const GestionUserApp()));
+  runApp(
+    AuthScope(
+      notifier: auth,
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => CartProvider()),
+        ],
+        child: const GestionUserApp(),
+      ),
+    ),
+  );
 }
 
 class GestionUserApp extends StatelessWidget {
@@ -173,6 +204,11 @@ class GestionUserApp extends StatelessWidget {
       routes: {
         '/reclamations': (context) => const ReclamationsHomePage(),
         '/chat': (context) => const ChatbotScreen(),
+        '/livraison': (context) => const LivraisonScreen(),
+        '/paiement': (context) => const PaiementScreen(),
+        '/confirmationPaiement': (context) => const ConfirmationScreen(),
+        '/panier': (context) => const CartScreen(),
+        '/historique': (context) => const HistoriqueScreen(),
       },
       home: Builder(
         builder: (context) {
