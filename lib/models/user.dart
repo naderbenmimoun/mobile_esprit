@@ -7,6 +7,7 @@ class AppUser {
   final String? imageUrl;
   final String gender; // 'Male' | 'Female' | 'Unisex'
   final String morphology; // 'Oval' | 'Rectangle' | 'Triangle' | 'Hourglass' | 'Pear'
+  final String? couponCode; // optional coupon assigned at signup
 
   const AppUser({
     this.id,
@@ -17,6 +18,7 @@ class AppUser {
     this.imageUrl,
     required this.gender,
     required this.morphology,
+    this.couponCode,
   });
 
   AppUser copyWith({
@@ -28,6 +30,7 @@ class AppUser {
     String? imageUrl,
     String? gender,
     String? morphology,
+    String? couponCode,
   }) {
     return AppUser(
       id: id ?? this.id,
@@ -38,6 +41,7 @@ class AppUser {
       imageUrl: imageUrl ?? this.imageUrl,
       gender: gender ?? this.gender,
       morphology: morphology ?? this.morphology,
+      couponCode: couponCode ?? this.couponCode,
     );
   }
 
@@ -51,6 +55,7 @@ class AppUser {
       'image_url': imageUrl,
       'gender': gender,
       'morphology': morphology,
+      'coupon_code': couponCode,
     };
   }
 
@@ -64,6 +69,7 @@ class AppUser {
       imageUrl: map['image_url'] as String?,
       gender: (map['gender'] as String?) ?? 'Unisex',
       morphology: (map['morphology'] as String?) ?? 'Oval',
+      couponCode: map['coupon_code'] as String?,
     );
   }
 }

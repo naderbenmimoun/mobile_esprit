@@ -9,7 +9,7 @@ class DBService {
   static final DBService instance = DBService._();
 
   static const _dbName = 'gestion_user.db';
-  static const _dbVersion = 2;
+  static const _dbVersion = 3;
   Database? _db;
 
   Future<Database> get database async {
@@ -34,7 +34,8 @@ class DBService {
             role TEXT NOT NULL CHECK (role IN ('admin','client')),
             image_url TEXT,
             gender TEXT NOT NULL DEFAULT 'Unisex',
-            morphology TEXT NOT NULL DEFAULT 'Oval'
+            morphology TEXT NOT NULL DEFAULT 'Oval',
+            coupon_code TEXT
           );
         ''');
       },
@@ -44,6 +45,10 @@ class DBService {
               "ALTER TABLE users ADD COLUMN gender TEXT NOT NULL DEFAULT 'Unisex'");
           await db.execute(
               "ALTER TABLE users ADD COLUMN morphology TEXT NOT NULL DEFAULT 'Oval'");
+        }
+        if (oldVersion < 3) {
+          await db.execute(
+              "ALTER TABLE users ADD COLUMN coupon_code TEXT");
         }
       },
       onOpen: (db) async {

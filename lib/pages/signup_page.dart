@@ -5,6 +5,7 @@ import '../widgets/app_text_field.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_snackbar.dart';
 import 'client_home.dart';
+import 'coupon_page.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -48,7 +49,12 @@ class _SignupPageState extends State<SignupPage> {
         return;
       }
       AppSnackBar.success(context, 'Compte créé avec succès');
-      await AppRouter.pushSlide(context, const ClientHome(), replace: true);
+      final code = AuthScope.read(context).currentUser?.couponCode ?? '—';
+      await AppRouter.pushSlide(
+        context,
+        CouponPage(couponCode: code),
+        replace: true,
+      );
     } catch (e) {
       if (!mounted) {
         return;

@@ -50,6 +50,7 @@ class AuthService extends ChangeNotifier {
       if (existing != null) {
         throw Exception('Email déjà utilisé.');
       }
+      final coupon = _generateCoupon();
       final user = AppUser(
         name: name,
         email: email,
@@ -58,6 +59,7 @@ class AuthService extends ChangeNotifier {
         imageUrl: null,
         gender: gender,
         morphology: morphology,
+        couponCode: coupon,
       );
       final id = await _db.insertUser(user);
       currentUser = user.copyWith(id: id);
@@ -197,6 +199,18 @@ class AuthService extends ChangeNotifier {
   // Test admin credentials (modifiable)
   static const String adminEmail = 'admin@example.com';
   static const String adminPassword = 'Admin123!';
+
+  String _generateCoupon() {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    final now = DateTime.now().millisecondsSinceEpoch;
+    var x = now;
+    final buf = StringBuffer('CP-');
+    for (int i = 0; i < 8; i++) {
+      x = (x * 1103515245 + 12345) & 0x7fffffff;
+      buf.write(alphabet[x % alphabet.length]);
+    }
+    return buf.toString();
+  }
 }
 
 class _ResetCode {
