@@ -9,7 +9,7 @@ class DBService {
   static final DBService instance = DBService._();
 
   static const _dbName = 'gestion_user.db';
-  static const _dbVersion = 1;
+  static const _dbVersion = 2;
   Database? _db;
 
   Future<Database> get database async {
@@ -32,9 +32,19 @@ class DBService {
             email TEXT NOT NULL UNIQUE,
             password_hash TEXT NOT NULL,
             role TEXT NOT NULL CHECK (role IN ('admin','client')),
-            image_url TEXT
+            image_url TEXT,
+            gender TEXT NOT NULL DEFAULT 'Unisex',
+            morphology TEXT NOT NULL DEFAULT 'Oval'
           );
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+              "ALTER TABLE users ADD COLUMN gender TEXT NOT NULL DEFAULT 'Unisex'");
+          await db.execute(
+              "ALTER TABLE users ADD COLUMN morphology TEXT NOT NULL DEFAULT 'Oval'");
+        }
       },
       onOpen: (db) async {
         // Ensure admin exists
@@ -61,6 +71,8 @@ class DBService {
         passwordHash: defaultHash,
         role: 'admin',
         imageUrl: null,
+        gender: 'Unisex',
+        morphology: 'Oval',
       );
       await insertUser(admin, dbOverride: db);
     }
@@ -81,6 +93,8 @@ class DBService {
         passwordHash: defaultHash,
         role: 'admin',
         imageUrl: null,
+        gender: 'Unisex',
+        morphology: 'Oval',
       );
       await insertUser(admin2, dbOverride: db);
     }
@@ -102,6 +116,8 @@ class DBService {
         passwordHash: hash,
         role: 'admin',
         imageUrl: null,
+        gender: 'Unisex',
+        morphology: 'Oval',
       );
       await insertUser(admin3, dbOverride: db);
     }

@@ -19,6 +19,8 @@ class _SignupPageState extends State<SignupPage> {
   final _pass = TextEditingController();
   final _confirm = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  String _gender = 'Unisex';
+  String _morphology = 'Oval';
 
   @override
   void dispose() {
@@ -39,6 +41,8 @@ class _SignupPageState extends State<SignupPage> {
         name: _name.text,
         email: _email.text,
         password: _pass.text,
+        gender: _gender,
+        morphology: _morphology,
       );
       if (!mounted) {
         return;
@@ -77,6 +81,42 @@ class _SignupPageState extends State<SignupPage> {
                         icon: Icons.person_outline,
                         validator: (v) => (v == null || v.trim().length < 2)
                             ? 'Nom trop court'
+                            : null,
+                      ),
+                      const SizedBox(height: 14),
+                      DropdownButtonFormField<String>(
+                        value: _gender,
+                        decoration: const InputDecoration(
+                          labelText: 'Genre',
+                          prefixIcon: Icon(Icons.wc_outlined),
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: 'Male', child: Text('Male')),
+                          DropdownMenuItem(value: 'Female', child: Text('Female')),
+                          DropdownMenuItem(value: 'Unisex', child: Text('Unisex')),
+                        ],
+                        onChanged: (v) => setState(() => _gender = v ?? 'Unisex'),
+                        validator: (v) => (v == null || v.isEmpty)
+                            ? 'Genre requis'
+                            : null,
+                      ),
+                      const SizedBox(height: 14),
+                      DropdownButtonFormField<String>(
+                        value: _morphology,
+                        decoration: const InputDecoration(
+                          labelText: 'Morphologie',
+                          prefixIcon: Icon(Icons.analytics_outlined),
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: 'Oval', child: Text('Oval')),
+                          DropdownMenuItem(value: 'Rectangle', child: Text('Rectangle')),
+                          DropdownMenuItem(value: 'Triangle', child: Text('Triangle')),
+                          DropdownMenuItem(value: 'Hourglass', child: Text('Hourglass')),
+                          DropdownMenuItem(value: 'Pear', child: Text('Pear')),
+                        ],
+                        onChanged: (v) => setState(() => _morphology = v ?? 'Oval'),
+                        validator: (v) => (v == null || v.isEmpty)
+                            ? 'Morphologie requise'
                             : null,
                       ),
                       const SizedBox(height: 14),

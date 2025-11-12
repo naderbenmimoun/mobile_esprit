@@ -9,6 +9,7 @@ import 'signup_page.dart';
 import 'admin_dashboard.dart';
 import 'client_home.dart';
 import '../services/auth_service.dart';
+import 'forgot_password_page.dart';
 
 // NOTE: Login UI unchanged; build error is unrelated (filesystem path issue on host).
 // Move project or fix user directory before expecting successful build.
@@ -90,10 +91,7 @@ class _LoginPageState extends State<LoginPage>
     }
   }
 
-  void _fillAdmin() {
-    _email.text = AuthService.adminEmail;
-    _pass.text = AuthService.adminPassword;
-  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -293,6 +291,18 @@ class _LoginPageState extends State<LoginPage>
                                           ),
                                         ),
                                       ),
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: TextButton(
+                                          onPressed: () {
+                                            AppRouter.pushSlide(
+                                              context,
+                                              const ForgotPasswordPage(),
+                                            );
+                                          },
+                                          child: const Text('Mot de passe oublié ?'),
+                                        ),
+                                      ),
                                       const SizedBox(height: 24),
                                       AnimatedContainer(
                                         duration: const Duration(
@@ -344,16 +354,6 @@ class _LoginPageState extends State<LoginPage>
                                         ),
                                       ),
                                       const SizedBox(height: 12),
-                                      FilledButton.tonal(
-                                        onPressed: _fillAdmin,
-                                        child: const Text(
-                                          'Utiliser compte admin (test)',
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      const Text(
-                                        'Si vous voyez "Utilisateur introuvable", utilisez le bouton admin ou créez un compte client.',
-                                      ),
                                     ],
                                   ),
                                 ),

@@ -10,6 +10,7 @@ class AuthService extends ChangeNotifier {
 
   AppUser? currentUser;
   bool isLoading = false;
+  final Map<String, (_ResetCode code, DateTime expiresAt)> _resetCodes = {};
 
   Future<void> init() async {
     await _db.database; // ensure initialized + seed admin
@@ -39,6 +40,8 @@ class AuthService extends ChangeNotifier {
     required String name,
     required String email,
     required String password,
+    required String gender,
+    required String morphology,
   }) async {
     isLoading = true;
     notifyListeners();
@@ -53,6 +56,8 @@ class AuthService extends ChangeNotifier {
         passwordHash: hashPassword(password),
         role: 'client',
         imageUrl: null,
+        gender: gender,
+        morphology: morphology,
       );
       final id = await _db.insertUser(user);
       currentUser = user.copyWith(id: id);
@@ -96,6 +101,70 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> requestPasswordReset(String email) async {
+    isLoading = true;
+    notifyListeners();
+    try {
+      final user = await _db.getUserByEmail(email);
+      await Future.delayed(const Duration(milliseconds: 300));
+      if (user == null) {
+        throw Exception("Utilisateur introuvable.");
+      }
+      final code = _ResetCode.generate();
+      final expires = DateTime.now().add(const Duration(minutes: 10));
+      _resetCodes[user.email.toLowerCase()] = (code, expires);
+      debugPrint('DEBUG: Code de réinitialisation pour ${user.email}: ${code.value} (expire à $expires)');
+      // Ici vous pourriez envoyer le code par email via un service externe.
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> verifyResetCode(String email, String code) async {
+    final key = email.trim().toLowerCase();
+    final entry = _resetCodes[key];
+    if (entry == null) {
+      throw Exception('Aucune demande en cours.');
+    }
+    final (stored, expiresAt) = entry;
+    if (DateTime.now().isAfter(expiresAt)) {
+      _resetCodes.remove(key);
+      throw Exception('Code expiré.');
+    }
+    if (stored.value != code.trim()) {
+      throw Exception('Code invalide.');
+    }
+  }
+
+  Future<void> resetPassword(String email, String newPassword) async {
+    isLoading = true;
+    notifyListeners();
+    try {
+      final key = email.trim().toLowerCase();
+      final user = await _db.getUserByEmail(key);
+      if (user == null) {
+        throw Exception('Utilisateur introuvable.');
+      }
+      // Optionally ensure a verified code exists before reset
+      if (!_resetCodes.containsKey(key)) {
+        throw Exception('Veuillez d\'abord vérifier le code.');
+      }
+      final updated = user.copyWith(
+        passwordHash: hashPassword(newPassword),
+      );
+      await _db.updateUser(updated);
+      _resetCodes.remove(key);
+      if (currentUser?.id == updated.id) {
+        currentUser = updated;
+        notifyListeners();
+      }
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<AppUser> updateProfile({
     String? name,
     String? email,
@@ -128,4 +197,14 @@ class AuthService extends ChangeNotifier {
   // Test admin credentials (modifiable)
   static const String adminEmail = 'admin@example.com';
   static const String adminPassword = 'Admin123!';
+}
+
+class _ResetCode {
+  final String value;
+  const _ResetCode(this.value);
+  static _ResetCode generate() {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final six = (now % 1000000).toString().padLeft(6, '0');
+    return _ResetCode(six);
+  }
 }

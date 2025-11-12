@@ -5,6 +5,8 @@ class AppUser {
   final String passwordHash; // SHA-256
   final String role; // 'admin' | 'client'
   final String? imageUrl;
+  final String gender; // 'Male' | 'Female' | 'Unisex'
+  final String morphology; // 'Oval' | 'Rectangle' | 'Triangle' | 'Hourglass' | 'Pear'
 
   const AppUser({
     this.id,
@@ -13,6 +15,8 @@ class AppUser {
     required this.passwordHash,
     required this.role,
     this.imageUrl,
+    required this.gender,
+    required this.morphology,
   });
 
   AppUser copyWith({
@@ -22,6 +26,8 @@ class AppUser {
     String? passwordHash,
     String? role,
     String? imageUrl,
+    String? gender,
+    String? morphology,
   }) {
     return AppUser(
       id: id ?? this.id,
@@ -30,6 +36,8 @@ class AppUser {
       passwordHash: passwordHash ?? this.passwordHash,
       role: role ?? this.role,
       imageUrl: imageUrl ?? this.imageUrl,
+      gender: gender ?? this.gender,
+      morphology: morphology ?? this.morphology,
     );
   }
 
@@ -41,6 +49,8 @@ class AppUser {
       'password_hash': passwordHash,
       'role': role,
       'image_url': imageUrl,
+      'gender': gender,
+      'morphology': morphology,
     };
   }
 
@@ -52,6 +62,8 @@ class AppUser {
       passwordHash: map['password_hash'] as String,
       role: map['role'] as String,
       imageUrl: map['image_url'] as String?,
+      gender: (map['gender'] as String?) ?? 'Unisex',
+      morphology: (map['morphology'] as String?) ?? 'Oval',
     );
   }
 }
