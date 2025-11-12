@@ -24,3 +24,9 @@ plugins {
 }
 
 include(":app")
+
+// NOTE: removed `rootProject.buildDir = file("C:/flutter_builds/${rootProject.name}/build")`
+// The settings.gradle.kts script does not expose `buildDir`. If you need to change the build directory:
+// - set `buildDir = file("C:/some/path")` inside the root build.gradle.kts (Project scope), or
+// - move the project to a path without spaces (recommended on Windows), or
+// - set an environment/Gradle property and apply it in the root project's build.gradle.kts.

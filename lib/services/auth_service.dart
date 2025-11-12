@@ -13,6 +13,20 @@ class AuthService extends ChangeNotifier {
 
   Future<void> init() async {
     await _db.database; // ensure initialized + seed admin
+    _seedAdmin();
+  }
+
+  void _seedAdmin() {
+    // ignore: unused_local_variable
+    final record = _store[adminEmail];
+    if (record == null) {
+      _store[adminEmail] = {
+        'password': adminPassword,
+        'role': 'admin',
+        'id': '1',
+      };
+      debugPrint('DEBUG: Admin seedé -> $adminEmail / $adminPassword');
+    }
   }
 
   static String hashPassword(String password) {
@@ -107,4 +121,11 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
     return updated;
   }
+
+  // Simple "in-memory" store: email -> {password, role, id}
+  final Map<String, Map<String, String>> _store = {};
+
+  // Test admin credentials (modifiable)
+  static const String adminEmail = 'admin@example.com';
+  static const String adminPassword = 'Admin123!';
 }

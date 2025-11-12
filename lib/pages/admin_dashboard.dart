@@ -58,7 +58,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               if (!context.mounted) return;
               await AppRouter.pushFade(
                 context,
-                const LoginPage(),
+                LoginPage(auth: auth),
                 replace: true,
               );
             },

@@ -40,5 +40,6 @@ android {
 }
 
 flutter {
-    source = "../.."
+    // Use an absolute, normalized path to avoid backslash/space escaping issues on Windows.
+    source = file("../..").canonicalPath.replace("\\", "/")
 }

@@ -37,7 +37,7 @@ class ClientHome extends StatelessWidget {
               }
               await AppRouter.pushFade(
                 context,
-                const LoginPage(),
+                LoginPage(auth: auth),
                 replace: true,
               );
             },

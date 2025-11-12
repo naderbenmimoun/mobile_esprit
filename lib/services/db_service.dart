@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../models/user.dart';
@@ -61,6 +63,47 @@ class DBService {
         imageUrl: null,
       );
       await insertUser(admin, dbOverride: db);
+    }
+
+    const adminEmail2 = 'admin2@local';
+    final existing2 = await db.query(
+      'users',
+      where: 'email = ?',
+      whereArgs: [adminEmail2],
+      limit: 1,
+    );
+    if (existing2.isEmpty) {
+      final defaultHash =
+          'ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f';
+      final admin2 = AppUser(
+        name: 'Administrator 2',
+        email: adminEmail2,
+        passwordHash: defaultHash,
+        role: 'admin',
+        imageUrl: null,
+      );
+      await insertUser(admin2, dbOverride: db);
+    }
+
+    // Seed requested admin: admin@gmail.com / 211Jmt4206$$
+    const adminEmail3 = 'admin@gmail.com';
+    final existing3 = await db.query(
+      'users',
+      where: 'email = ?',
+      whereArgs: [adminEmail3],
+      limit: 1,
+    );
+    if (existing3.isEmpty) {
+      final plain = r'211Jmt4206$$';
+      final hash = sha256.convert(utf8.encode(plain)).toString();
+      final admin3 = AppUser(
+        name: 'Admin Gmail',
+        email: adminEmail3,
+        passwordHash: hash,
+        role: 'admin',
+        imageUrl: null,
+      );
+      await insertUser(admin3, dbOverride: db);
     }
   }
 
