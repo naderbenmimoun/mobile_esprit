@@ -5,6 +5,7 @@ import 'package:sqflite/sqflite.dart';
 
 import '../models/cart_item.dart';
 import '../models/order.dart';
+import 'session_service.dart';
 
 class DBHelper {
   DBHelper._privateConstructor();
@@ -34,8 +35,9 @@ class DBHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -55,7 +57,8 @@ class DBHelper {
         nom TEXT NOT NULL,
         prix REAL NOT NULL,
         qty INTEGER NOT NULL,
-        image TEXT
+        image TEXT,
+        userId INTEGER NOT NULL
       )
     ''');
 
@@ -68,7 +71,8 @@ class DBHelper {
         adresse TEXT,
         status TEXT NOT NULL DEFAULT 'en_attente',
         mode_paiement TEXT NOT NULL,
-        numero_commande TEXT
+        numero_commande TEXT,
+        userId INTEGER NOT NULL
       )
     ''');
 
@@ -84,6 +88,22 @@ class DBHelper {
         FOREIGN KEY(orderId) REFERENCES orders(id)
       )
     ''');
+
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_cart_user ON cart(userId)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(userId)');
+  }
+
+  Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      try {
+        await db.execute('ALTER TABLE cart ADD COLUMN userId INTEGER');
+      } catch (_) {}
+      try {
+        await db.execute('ALTER TABLE orders ADD COLUMN userId INTEGER');
+      } catch (_) {}
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_cart_user ON cart(userId)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(userId)');
+    }
   }
 
   Future<bool> checkTableStructure() async {
@@ -110,37 +130,43 @@ class DBHelper {
   // Méthodes CRUD pour le panier
   Future<int> insertCartItem(CartItem item) async {
     final db = await database;
-    return await db.insert('cart', item.toMap());
+    final userId = await SessionService.instance.getUserIdOrThrow();
+    final data = Map<String, dynamic>.from(item.toMap())..['userId'] = userId;
+    return await db.insert('cart', data);
   }
 
   Future<List<CartItem>> getCartItems() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('cart');
+    final userId = await SessionService.instance.getUserIdOrThrow();
+    final List<Map<String, dynamic>> maps = await db.query('cart', where: 'userId = ?', whereArgs: [userId]);
     return List.generate(maps.length, (i) => CartItem.fromMap(maps[i]));
   }
 
   Future<int> updateCartItemQty(int id, int qty) async {
     final db = await database;
+    final userId = await SessionService.instance.getUserIdOrThrow();
     return await db.update(
       'cart',
       {'qty': qty},
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'id = ? AND userId = ?',
+      whereArgs: [id, userId],
     );
   }
 
   Future<int> deleteCartItem(int id) async {
     final db = await database;
+    final userId = await SessionService.instance.getUserIdOrThrow();
     return await db.delete(
       'cart',
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'id = ? AND userId = ?',
+      whereArgs: [id, userId],
     );
   }
 
   Future<int> clearCart() async {
     final db = await database;
-    return await db.delete('cart');
+    final userId = await SessionService.instance.getUserIdOrThrow();
+    return await db.delete('cart', where: 'userId = ?', whereArgs: [userId]);
   }
 
   // Méthodes CRUD pour les commandes
@@ -148,6 +174,7 @@ class DBHelper {
     final db = await database;
     return await db.transaction((txn) async {
       try {
+        final userId = await SessionService.instance.getUserIdOrThrow();
         // Insérer la commande
         final orderId = await txn.insert('orders', {
           'total': order.total,
@@ -156,6 +183,7 @@ class DBHelper {
           'status': order.status,
           'mode_paiement': order.modePaiement,
           'numero_commande': order.numeroCommande,
+          'userId': userId,
         });
 
         // Insérer les articles de la commande
@@ -179,10 +207,11 @@ class DBHelper {
 
   Future<Order?> getOrderById(int id) async {
     final db = await database;
+    final userId = await SessionService.instance.getUserIdOrThrow();
     final List<Map<String, dynamic>> maps = await db.query(
       'orders',
-      where: 'id = ?',
-      whereArgs: [id],
+      where: 'id = ? AND userId = ?',
+      whereArgs: [id, userId],
     );
 
     if (maps.isEmpty) return null;
@@ -191,6 +220,7 @@ class DBHelper {
 
   Future<List<Map<String, dynamic>>> getOrderItems(int orderId) async {
     final db = await database;
+    final userId = await SessionService.instance.getUserIdOrThrow();
     return await db.query(
       'order_items',
       where: 'orderId = ?',
@@ -200,23 +230,26 @@ class DBHelper {
 
   Future<List<Order>> getAllOrders() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('orders');
+    final userId = await SessionService.instance.getUserIdOrThrow();
+    final List<Map<String, dynamic>> maps = await db.query('orders', where: 'userId = ?', whereArgs: [userId]);
     return List.generate(maps.length, (i) => Order.fromMap(maps[i]));
   }
 
   Future<int> updateOrderStatus(int orderId, String status) async {
     final db = await database;
+    final userId = await SessionService.instance.getUserIdOrThrow();
     return await db.update(
       'orders',
       {'status': status},
-      where: 'id = ?',
-      whereArgs: [orderId],
+      where: 'id = ? AND userId = ?',
+      whereArgs: [orderId, userId],
     );
   }
 
   Future<int> deleteOrder(int orderId) async {
     final db = await database;
     return await db.transaction((txn) async {
+      final userId = await SessionService.instance.getUserIdOrThrow();
       // Supprimer d'abord les articles de la commande
       await txn.delete(
         'order_items',
@@ -227,8 +260,8 @@ class DBHelper {
       // Puis supprimer la commande
       return await txn.delete(
         'orders',
-        where: 'id = ?',
-        whereArgs: [orderId],
+        where: 'id = ? AND userId = ?',
+        whereArgs: [orderId, userId],
       );
     });
   }
@@ -256,9 +289,10 @@ class DBHelper {
     String? endDate,
   }) async {
     final db = await database;
+    final userId = await SessionService.instance.getUserIdOrThrow();
 
-    String whereClause = '1=1';
-    List<dynamic> whereArgs = [];
+    String whereClause = 'userId = ?';
+    List<dynamic> whereArgs = [userId];
 
     if (numeroCommande != null) {
       whereClause += ' AND numero_commande LIKE ?';

@@ -21,6 +21,11 @@ class ClientHome extends StatelessWidget {
         title: const Text('Accueil - Client'),
         actions: [
           IconButton(
+            tooltip: 'Produits',
+            icon: const Icon(Icons.storefront_outlined),
+            onPressed: () => Navigator.pushNamed(context, '/products'),
+          ),
+          IconButton(
             tooltip: 'Mon panier',
             icon: const Icon(Icons.shopping_cart_outlined),
             onPressed: () => Navigator.pushNamed(context, '/panier'),
@@ -121,6 +126,30 @@ class ClientHome extends StatelessWidget {
                   Icon(Icons.shopping_cart_outlined),
                   SizedBox(width: 12),
                   Expanded(child: Text('Mon panier')),
+                  Icon(Icons.chevron_right),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            AppCard(
+              onTap: () => Navigator.pushNamed(context, '/historique'),
+              child: Row(
+                children: const [
+                  Icon(Icons.history),
+                  SizedBox(width: 12),
+                  Expanded(child: Text('Historique de commande')),
+                  Icon(Icons.chevron_right),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            AppCard(
+              onTap: () => Navigator.pushNamed(context, '/recommendedProducts'),
+              child: Row(
+                children: const [
+                  Icon(Icons.recommend_outlined),
+                  SizedBox(width: 12),
+                  Expanded(child: Text('Produits recommandés')),
                   Icon(Icons.chevron_right),
                 ],
               ),

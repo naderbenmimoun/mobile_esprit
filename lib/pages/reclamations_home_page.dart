@@ -25,64 +25,23 @@ class _ReclamationsHomePageState extends State<ReclamationsHomePage> {
     debugPrint('🔄 Chargement des réclamations...');
     setState(() => _isLoading = true);
     try {
+      // Cleanup legacy static rows (from older versions without userId)
+      await ReclamationDatabase.instance.deleteLegacyWithoutUserId();
+
       final items = await ReclamationDatabase.instance.readAll();
       debugPrint('📊 Nombre de réclamations dans SQLite: ${items.length}');
-      if (items.isEmpty) {
-        debugPrint('🆕 Première utilisation - Insertion des données exemple');
-        await _insertSampleData();
-        final newItems = await ReclamationDatabase.instance.readAll();
-        setState(() {
-          reclamations = newItems;
-          _isLoading = false;
-        });
-        debugPrint('✅ ${newItems.length} réclamations chargées');
-      } else {
-        setState(() {
-          reclamations = items;
-          _isLoading = false;
-        });
-        debugPrint('✅ ${items.length} réclamations chargées');
-      }
+      setState(() {
+        reclamations = items;
+        _isLoading = false;
+      });
+      debugPrint('✅ ${items.length} réclamations chargées');
     } catch (e) {
       debugPrint('❌ Erreur lors du chargement: $e');
       setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _insertSampleData() async {
-    debugPrint('🔧 Insertion des données exemple...');
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final samples = [
-      Reclamation(
-        id: now.toString(),
-        titre: 'Produit cassé',
-        description: 'Le produit reçu est cassé.',
-        statut: 'Ouvert',
-        dateCreation: DateTime.now(),
-      ),
-      Reclamation(
-        id: (now + 1).toString(),
-        titre: 'Colis non reçu',
-        description: 'Je n\'ai pas reçu mon colis.',
-        statut: 'En cours',
-        dateCreation: DateTime.now(),
-      ),
-      Reclamation(
-        id: (now + 2).toString(),
-        titre: 'Article manquant',
-        description: 'Un accessoire manquant dans la commande.',
-        statut: 'Ouvert',
-        dateCreation: DateTime.now(),
-        attachments: const [],
-      ),
-    ];
-
-    for (var rec in samples) {
-      debugPrint('  ➕ Insertion: ${rec.titre}');
-      await ReclamationDatabase.instance.create(rec);
-    }
-    debugPrint('✅ ${samples.length} réclamations insérées');
-  }
+  
 
   Future<void> _addReclamation() async {
     final result = await Navigator.push(

@@ -17,32 +17,10 @@ class _CartScreenState extends State<CartScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_autoInjected) {
-      _autoInjected = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) => _maybeInsertTestItem());
-    }
+    // Auto-injection of test item removed to ensure only real cart data is shown.
   }
 
-  Future<void> _maybeInsertTestItem() async {
-    if (!kDebugMode) return;
-    final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    await cartProvider.loadCart();
-    if (cartProvider.items.isEmpty) {
-      final testItem = CartItem(
-        productId: DateTime.now().millisecondsSinceEpoch % 100000,
-        nom: 'T-shirt de test',
-        prix: 9.99,
-        qty: 1,
-        image: null,
-      );
-      await cartProvider.addItem(testItem);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Produit de test ajouté automatiquement (debug)')),
-        );
-      }
-    }
-  }
+  
 
   @override
   Widget build(BuildContext context) {

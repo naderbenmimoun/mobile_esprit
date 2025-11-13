@@ -15,6 +15,9 @@ import 'pages/confirmation_screen.dart';
 import 'pages/cart_screen.dart';
 import 'pages/historique_screen.dart';
 import 'services/db_help.dart';
+import 'pages/home_screen.dart';
+import 'pages/recommended_products_page.dart';
+import 'pages/product_favorites_page.dart';
 
 // NOTE: Build failure originates from host path "C:\Users\NADER\ BM\...".
 // Ensure no file named "C:\Users\NADER" blocks directory creation or move project to a path without spaces.
@@ -100,8 +103,23 @@ void main() async {
   );
 }
 
-class GestionUserApp extends StatelessWidget {
+class GestionUserApp extends StatefulWidget {
   const GestionUserApp({super.key});
+
+  @override
+  State<GestionUserApp> createState() => _GestionUserAppState();
+}
+
+class _GestionUserAppState extends State<GestionUserApp> {
+  ThemeMode _themeMode = ThemeMode.system;
+
+  void _toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    });
+  }
+
+  bool get _isDark => _themeMode == ThemeMode.dark;
 
   @override
   Widget build(BuildContext context) {
@@ -200,7 +218,7 @@ class GestionUserApp extends StatelessWidget {
           },
         ),
       ),
-      themeMode: ThemeMode.system,
+      themeMode: _themeMode,
       routes: {
         '/reclamations': (context) => const ReclamationsHomePage(),
         '/chat': (context) => const ChatbotScreen(),
@@ -209,6 +227,8 @@ class GestionUserApp extends StatelessWidget {
         '/confirmationPaiement': (context) => const ConfirmationScreen(),
         '/panier': (context) => const CartScreen(),
         '/historique': (context) => const HistoriqueScreen(),
+        '/products': (context) => HomeScreen(onToggleTheme: _toggleTheme, isDarkMode: _isDark),
+        '/recommendedProducts': (context) => const RecommendedProductsPage(),
       },
       home: Builder(
         builder: (context) {
@@ -218,7 +238,7 @@ class GestionUserApp extends StatelessWidget {
           }
           return auth.currentUser!.role == 'admin'
               ? AdminDashboard(auth: auth)
-              : const ClientHome();
+              : HomeScreen(onToggleTheme: _toggleTheme, isDarkMode: _isDark);
         },
       ),
     );

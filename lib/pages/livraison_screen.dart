@@ -4,6 +4,9 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import '../config/map_config.dart';
+import '../main.dart';
+import '../database/database_helper.dart';
+import '../models/user_profile.dart';
 
 const String kMapTilerKey = MapConfig.mapTilerKey;
 const String kMapboxToken = MapConfig.mapboxToken;
@@ -227,6 +230,34 @@ class _LivraisonScreenState extends State<LivraisonScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _prefillName());
+  }
+
+  Future<void> _prefillName() async {
+    try {
+      final auth = AuthScope.watch(context);
+      final user = auth.currentUser;
+      String? fullName;
+      final db = DatabaseHelper.instance;
+      UserProfile? profile;
+      try {
+        profile = await db.getUserProfile();
+      } catch (_) {}
+      if (profile != null && profile.name.trim().isNotEmpty) {
+        fullName = profile.name.trim();
+      } else if (user != null && user.email.isNotEmpty) {
+        final local = user.email.split('@').first;
+        fullName = local.replaceAll('.', ' ').replaceAll('_', ' ');
+      }
+      if (fullName != null && fullName.isNotEmpty && mounted) {
+        nom.text = fullName;
+      }
+    } catch (_) {}
   }
 
   Future<void> _goToCurrentLocation() async {

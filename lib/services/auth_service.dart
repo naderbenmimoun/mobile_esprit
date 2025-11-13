@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/user.dart';
 import 'db_service.dart';
+import 'session_service.dart';
 
 class AuthService extends ChangeNotifier {
   final _db = DBService.instance;
@@ -63,6 +64,8 @@ class AuthService extends ChangeNotifier {
       );
       final id = await _db.insertUser(user);
       currentUser = user.copyWith(id: id);
+      // Persist session userId
+      await SessionService.instance.setUserId(currentUser!.id!);
       notifyListeners();
       return currentUser!;
     } finally {
@@ -90,6 +93,8 @@ class AuthService extends ChangeNotifier {
         throw Exception('Mot de passe invalide.');
       }
       currentUser = user;
+      // Persist session userId
+      await SessionService.instance.setUserId(currentUser!.id!);
       notifyListeners();
       return user;
     } finally {
@@ -100,6 +105,8 @@ class AuthService extends ChangeNotifier {
 
   Future<void> logout() async {
     currentUser = null;
+    // Clear session on logout
+    await SessionService.instance.clear();
     notifyListeners();
   }
 
